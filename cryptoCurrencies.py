@@ -16,9 +16,9 @@ for i in range(0,10):
   CryptoCurrenciesUrl = "https://in.finance.yahoo.com/cryptocurrencies?offset="+str(i)+"&amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;count=50"
   r= requests.get(CryptoCurrenciesUrl)
   data=r.text
-  soup=BeautifulSoup(data)
+  soup=BeautifulSoup(data,"html.parser")
   ct=datetime.datetime.now() 
-  for listing in soup.find_all('tr', attrs={'class':'SimpleDataTableRow'}):
+  for listing in soup.find_all('tr'):
     for name in listing.find_all('td', attrs={'aria-label':'Name'}):
       names.append(name.text)
       dateTime.append(ct)
@@ -36,4 +36,14 @@ for i in range(0,10):
       circulatingSupplys.append(circulatingSupply.text)
 
 CryptoCurrenciesDF=pd.DataFrame({"Date Time":dateTime,"Names": names, "Prices": prices, "Change": changes, "% Change": percentChanges,"Market Caps":marketCaps,"Total Volume":totalVolumes,"Circulating Supplys":circulatingSupplys})
+import os
+from utils import *
 
+FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+path=data_path = os.path.join(FILE_DIR, "data/CryptoCurrencies.csv")
+main_df=open_csv(path)
+if main_df is not None:
+    result=merge_pf(main_df,CryptoCurrenciesDF)
+    result.to_csv(path,index=False)
+else:
+    CryptoCurrenciesDF.to_csv(path,index=False)
